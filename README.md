@@ -47,12 +47,6 @@ Built around the **VARK model** (Visual, Auditory, Read/Write, Kinesthetic):
 
 ---
 
-## 🖼️ Screenshots
-
-> _Add screenshots here: `assets/screenshot-main.png`, `assets/screenshot-vark.png`_
-
----
-
 ## 🚀 Quick Start
 
 ### Prerequisites
