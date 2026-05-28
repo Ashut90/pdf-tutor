@@ -1,0 +1,15 @@
+# Core PDF handling
+PyMuPDF>=1.24.0
+
+# Image rendering (PDF page view, diagram display)
+Pillow>=10.0.0
+
+# Charts
+matplotlib>=3.7.0
+
+# Local mermaid fallback rendering
+graphviz>=0.20.0
+
+# Text-to-speech (Auditory learning mode)
+pyttsx3>=2.90
+gTTS>=2.4.0
