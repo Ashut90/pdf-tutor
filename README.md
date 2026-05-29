@@ -1,12 +1,29 @@
 # 📚 PDF Tutor
 
-> An offline-capable, multi-provider AI study assistant that turns any PDF textbook into an interactive learning experience — complete with VARK learning styles, diagrams, flashcards, and text-to-speech.
+> Study any PDF the way *you* learn best — locally, privately, with diagrams, audio, flashcards, and hands-on commands.
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-8%20passing-brightgreen.svg)](tests/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#-quick-start)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-PDF Tutor reads the table of contents of any PDF book, lets you pick a chapter, and explains it through your choice of AI model — running **fully offline** on your own machine, or via **free cloud APIs** when you want higher quality. It works with **any** technical PDF — programming books, research papers, datasheets, course material, documentation — and was built to make self-directed study faster and more engaging.
+![PDF Tutor demo](assets/demo.gif)
+
+PDF Tutor reads the table of contents of any PDF, lets you pick a chapter, and explains it through your preferred AI model — **fully offline** on your own machine, or via **free cloud APIs** for higher quality. It adapts to how *you* learn using the VARK model: Visual diagrams, Auditory TTS, Read/Write notes, or Kinesthetic hands-on commands.
+
+---
+
+## ⚡ Try it in 30 seconds
+
+```bash
+git clone https://github.com/Ashut90/pdf-tutor.git
+cd pdf-tutor
+pip install -r requirements.txt
+python -m pdf_tutor
+```
+
+Drop any PDF onto the app, pick a chapter, pick a learning mode — that's it.
 
 ---
 
@@ -44,6 +61,28 @@ Built around the **VARK model** (Visual, Auditory, Read/Write, Kinesthetic):
 - **Anki flashcard export** — auto-generates spaced-repetition cards
 - **Mindmap export** — interactive HTML mindmaps
 - **Text-to-speech** — listen to any explanation
+
+---
+
+## 🖼️ Screenshots
+
+<!--
+  Replace these with actual screenshots once captured.
+  Suggested shots:
+    1. assets/screenshot-main.png  — main 3-pane window with a PDF loaded
+    2. assets/screenshot-vark.png  — VARK mode selector
+    3. assets/screenshot-mindmap.png — exported mindmap in browser
+
+  To record a GIF on Ubuntu (install once, drag-select region):
+    sudo apt install peek && peek
+
+  Then reference it at the very top of this README:
+    ![PDF Tutor demo](assets/demo.gif)
+-->
+
+| Main window | VARK learning modes |
+|:-----------:|:-------------------:|
+| _coming soon_ | _coming soon_ |
 
 ---
 
