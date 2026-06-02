@@ -445,6 +445,9 @@ class App(tk.Tk):
         self.status_lbl = tk.Label(top, text="● Ready", bg=PANEL, fg=GREEN, font=SM)
         self.status_lbl.pack(side="right", padx=16)
 
+        tk.Label(top, text="github.com/Ashut90/pdf-tutor", bg=PANEL, fg=MUTED, font=SM,
+                 cursor="hand2").pack(side="right", padx=(0, 4))
+
         pw = tk.PanedWindow(self, orient="horizontal", bg=BG, bd=0, sashwidth=5)
         pw.pack(fill="both", expand=True)
 
