@@ -8,6 +8,7 @@ import re
 import io
 import json
 import threading
+import webbrowser
 import urllib.request
 import urllib.error
 import tkinter as tk
@@ -462,6 +463,17 @@ class App(tk.Tk):
         right = tk.Frame(pw, bg=BG)
         pw.add(right, minsize=520)
         self._build_chat(right)
+
+        footer = tk.Frame(self, bg=PANEL, height=24)
+        footer.pack(fill="x", side="bottom")
+        footer.pack_propagate(False)
+        tk.Label(footer, text="v1.0.0", bg=PANEL, fg=MUTED, font=SM).pack(side="left", padx=12)
+        link = tk.Label(footer, text="⭐ github.com/Ashut90/pdf-tutor",
+                        bg=PANEL, fg=MUTED, font=SM, cursor="hand2")
+        link.pack(side="right", padx=12)
+        link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/Ashut90/pdf-tutor"))
+        link.bind("<Enter>", lambda e: link.config(fg=BLUE))
+        link.bind("<Leave>", lambda e: link.config(fg=MUTED))
 
     def _build_library(self, p):
         tk.Button(p, text="📂   Open PDF Book", bg=ACCENT, fg="white", relief="flat",
