@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 585" width="760" height="585">
+<defs>
+<style>
+  @keyframes flow {
+    from { stroke-dashoffset: 12; }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:.85; } 50% { opacity:1; }
+  }
+  .fl { stroke-dasharray:4 3; animation:flow .5s linear infinite; fill:none; stroke-width:1.5; }
+  .fb { stroke:#58a6ff; }
+  .fg { stroke:#3fb950; }
+  .fp { stroke:#bc8cff; }
+  .fo { stroke:#f0883e; }
+  .n1 { animation:rise .45s ease both; animation-delay:.10s; }
+  .n2 { animation:rise .45s ease both; animation-delay:.45s; }
+  .n3 { animation:rise .45s ease both; animation-delay:.80s; }
+  .n4 { animation:rise .45s ease both; animation-delay:1.15s; }
+  .n5 { animation:rise .45s ease both; animation-delay:1.50s; }
+  .n6 { animation:rise .45s ease both; animation-delay:1.85s; }
+  .n7 { animation:rise .45s ease both; animation-delay:2.20s; }
+  .lbl { font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; fill:#e6edf3; }
+  .sub { font:10px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; fill:#8b949e; }
+  .ttl { font:700 16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; fill:#58a6ff; }
+</style>
+<marker id="ab" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0 7 2.5 0 5" fill="#58a6ff"/></marker>
+<marker id="ag" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0 7 2.5 0 5" fill="#3fb950"/></marker>
+<marker id="ap" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0 7 2.5 0 5" fill="#bc8cff"/></marker>
+<marker id="ao" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0 7 2.5 0 5" fill="#f0883e"/></marker>
+</defs>
+
+<!-- background -->
+<rect width="760" height="585" rx="12" fill="#0d1117"/>
+
+<!-- title -->
+<text x="380" y="28" class="ttl" text-anchor="middle">PDF Tutor — Architecture Flow</text>
+<text x="380" y="44" class="sub" text-anchor="middle">PDF  ➜  extraction  ➜  AI providers  ➜  VARK teaching  ➜  export</text>
+
+<!-- ── 1 PDF File ── -->
+<g class="n1">
+  <rect x="300" y="55" width="160" height="50" rx="8" fill="#0d2137" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="380" y="76"  class="lbl" text-anchor="middle">📄  PDF File</text>
+  <text x="380" y="93"  class="sub" text-anchor="middle">any textbook or paper</text>
+</g>
+
+<!-- 1→2 -->
+<line x1="380" y1="105" x2="380" y2="128" class="fl fb" marker-end="url(#ab)"/>
+
+<!-- ── 2 core/pdf.py ── -->
+<g class="n2">
+  <rect x="235" y="130" width="290" height="50" rx="8" fill="#0d2137" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="380" y="151" class="lbl" text-anchor="middle">core / pdf.py</text>
+  <text x="380" y="168" class="sub" text-anchor="middle">TOC extraction  ·  text render  ·  page images</text>
+</g>
+
+<!-- 2→3 -->
+<line x1="380" y1="180" x2="380" y2="203" class="fl fb" marker-end="url(#ab)"/>
+
+<!-- ── 3 ui/app.py ── -->
+<g class="n3">
+  <rect x="210" y="205" width="340" height="50" rx="8" fill="#0d2116" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="380" y="226" class="lbl" text-anchor="middle">ui / app.py  —  3-pane GUI</text>
+  <text x="380" y="243" class="sub" text-anchor="middle">Library  │  PDF Viewer  │  AI Chat</text>
+</g>
+
+<!-- 3→4 -->
+<line x1="380" y1="255" x2="380" y2="278" class="fl fg" marker-end="url(#ag)"/>
+
+<!-- ── 4 ai/client.py ── -->
+<g class="n4">
+  <rect x="235" y="280" width="290" height="50" rx="8" fill="#1a0d2e" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="380" y="301" class="lbl" text-anchor="middle">ai / client.py</text>
+  <text x="380" y="318" class="sub" text-anchor="middle">unified interface  ·  streaming  ·  auto-fallback</text>
+</g>
+
+<!-- 4→providers (curved fan) -->
+<path d="M380,330 C380,346 90,346 90,360"  class="fl fp" marker-end="url(#ap)"/>
+<path d="M380,330 C380,346 235,346 235,360" class="fl fp" marker-end="url(#ap)"/>
+<path d="M380,330 C380,346 525,346 525,360" class="fl fp" marker-end="url(#ap)"/>
+<path d="M380,330 C380,346 672,346 672,360" class="fl fp" marker-end="url(#ap)"/>
+
+<!-- ── 5 Providers ── -->
+<g class="n5">
+  <rect x="30"  y="360" width="120" height="46" rx="7" fill="#0d2116" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="90"  y="380" class="lbl" text-anchor="middle" font-size="12px">🦙 Ollama</text>
+  <text x="90"  y="396" class="sub" text-anchor="middle">offline · free</text>
+
+  <rect x="175" y="360" width="120" height="46" rx="7" fill="#0d2137" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="235" y="380" class="lbl" text-anchor="middle" font-size="12px">✨ Gemini</text>
+  <text x="235" y="396" class="sub" text-anchor="middle">1 M context</text>
+
+  <rect x="465" y="360" width="120" height="46" rx="7" fill="#2e1a0d" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="525" y="380" class="lbl" text-anchor="middle" font-size="12px">⚡ Groq</text>
+  <text x="525" y="396" class="sub" text-anchor="middle">fast inference</text>
+
+  <rect x="610" y="360" width="124" height="46" rx="7" fill="#1a0d2e" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="672" y="380" class="lbl" text-anchor="middle" font-size="12px">🌐 OpenRouter</text>
+  <text x="672" y="396" class="sub" text-anchor="middle">model variety</text>
+</g>
+
+<!-- providers→VARK (converging) -->
+<path d="M90,406  C90,422  380,422 380,436" class="fl fg" marker-end="url(#ag)"/>
+<path d="M235,406 C235,422 380,422 380,436" class="fl fg" marker-end="url(#ag)"/>
+<path d="M525,406 C525,422 380,422 380,436" class="fl fg" marker-end="url(#ag)"/>
+<path d="M672,406 C672,422 380,422 380,436" class="fl fg" marker-end="url(#ag)"/>
+
+<!-- ── 6 learning/modes.py ── -->
+<g class="n6">
+  <rect x="175" y="436" width="410" height="50" rx="8" fill="#2e2a0d" stroke="#d29922" stroke-width="1.5"/>
+  <text x="380" y="457" class="lbl" text-anchor="middle">learning / modes.py  —  VARK</text>
+  <text x="380" y="474" class="sub" text-anchor="middle">🎨 Visual  ·  🎧 Auditory  ·  📝 Read/Write  ·  🛠 Kinesthetic</text>
+</g>
+
+<!-- VARK→outputs (fan) -->
+<path d="M380,486 C380,502 100,502 100,516"  class="fl fo" marker-end="url(#ao)"/>
+<path d="M380,486 C380,502 248,502 248,516"  class="fl fo" marker-end="url(#ao)"/>
+<path d="M380,486 L380,516"                  class="fl fo" marker-end="url(#ao)"/>
+<path d="M380,486 C380,502 500,502 500,516"  class="fl fo" marker-end="url(#ao)"/>
+<path d="M380,486 C380,502 638,502 638,516"  class="fl fo" marker-end="url(#ao)"/>
+
+<!-- ── 7 Outputs ── -->
+<g class="n7">
+  <rect x="28"  y="516" width="144" height="46" rx="7" fill="#2e1a0d" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="100" y="535" class="lbl" text-anchor="middle" font-size="11px">rendering/visuals</text>
+  <text x="100" y="551" class="sub" text-anchor="middle">Mermaid · Charts · ASCII</text>
+
+  <rect x="188" y="516" width="120" height="46" rx="7" fill="#2e2a0d" stroke="#d29922" stroke-width="1.5"/>
+  <text x="248" y="535" class="lbl" text-anchor="middle" font-size="12px">🃏 Anki</text>
+  <text x="248" y="551" class="sub" text-anchor="middle">flashcard export</text>
+
+  <rect x="322" y="516" width="116" height="46" rx="7" fill="#2e2a0d" stroke="#d29922" stroke-width="1.5"/>
+  <text x="380" y="535" class="lbl" text-anchor="middle" font-size="12px">🗺 Mindmap</text>
+  <text x="380" y="551" class="sub" text-anchor="middle">HTML export</text>
+
+  <rect x="452" y="516" width="96" height="46" rx="7" fill="#2e2a0d" stroke="#d29922" stroke-width="1.5"/>
+  <text x="500" y="535" class="lbl" text-anchor="middle" font-size="12px">🔊 TTS</text>
+  <text x="500" y="551" class="sub" text-anchor="middle">audio playback</text>
+
+  <rect x="562" y="516" width="152" height="46" rx="7" fill="#2e2a0d" stroke="#d29922" stroke-width="1.5"/>
+  <text x="638" y="535" class="lbl" text-anchor="middle" font-size="12px">💾 Save Notes</text>
+  <text x="638" y="551" class="sub" text-anchor="middle">MD · HTML · TXT</text>
+</g>
+
+</svg>

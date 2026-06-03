@@ -195,16 +195,7 @@ pdf-tutor/
 
 ## 🏗️ Architecture
 
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│  PDF Library│     │  PDF Viewer  │     │  AI Chat    │
-│  (chapters) │────▶│ text / image │────▶│  + VARK     │
-└─────────────┘     └──────────────┘     └─────────────┘
-       │                    │                    │
-       ▼                    ▼                    ▼
-   core/pdf.py      rendering/visuals.py    ai/client.py
-   (PyMuPDF)        (mermaid/charts)        (4 providers)
-```
+![Architecture flow](assets/architecture.svg)
 
 The UI loads a chapter via `core/pdf.py`, sends its text plus a mode-specific
 prompt (`learning/modes.py`) to the selected provider (`ai/client.py`), and
