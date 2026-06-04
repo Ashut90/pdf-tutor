@@ -17,7 +17,7 @@ def _print_startup_notice():
     BOLD  = "\033[1m"
     RESET = "\033[0m"
     print(f"\n{CYAN}{'─' * 54}{RESET}")
-    print(f"  {BOLD}📚 PDF Tutor{RESET}  •  AI study assistant")
+    print(f"  {BOLD}📚 Kritrim Smriti{RESET}  •  AI study assistant")
     print(f"  github.com/Ashut90/pdf-tutor")
     print(f"  {YELLOW}If this saves you time, a ⭐ keeps it alive.{RESET}")
     print(f"{CYAN}{'─' * 54}{RESET}\n")
