@@ -359,30 +359,7 @@ class App(tk.Tk):
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 mermaid.initialize({{
   startOnLoad: true,
-  theme: 'base',
-  themeVariables: {{
-    primaryColor:       '#1f6feb',
-    primaryTextColor:   '#ffffff',
-    primaryBorderColor: '#388bfd',
-    lineColor:          '#58a6ff',
-    secondaryColor:     '#1a2e4a',
-    tertiaryColor:      '#0d2116',
-    background:         '#111827',
-    mainBkg:            '#1c2333',
-    nodeBorder:         '#388bfd',
-    clusterBkg:         '#161b22',
-    titleColor:         '#e6edf3',
-    fontFamily:         "Inter,-apple-system,sans-serif",
-    fontSize:           '14px',
-    mindmapSection0:    '#1f6feb',
-    mindmapSection1:    '#1a7f37',
-    mindmapSection2:    '#6e40c9',
-    mindmapSection3:    '#b45309',
-    mindmapSection4:    '#0e7490',
-    mindmapSection5:    '#be185d',
-    mindmapSection6:    '#065f46',
-    mindmapSection7:    '#92400e',
-  }}
+  theme: 'dark',
 }});
 
 // zoom state
