@@ -1714,51 +1714,229 @@ document.getElementById('btnPng').onclick = () => {{
         return header + text
 
     def _build_html_notes(self, text):
-        """HTML — styled, mermaid renders in browsers that support it."""
+        """HTML — clean study-notes layout with readable typography."""
         from datetime import datetime
-        chap_info = ""
+        chap_title = ""
+        chap_meta  = ""
         if self.selected_chapter:
             t, ps, pe = self.selected_chapter
-            chap_info = f"<p><b>Chapter:</b> {t} (pages {ps}-{pe})</p>"
-        src_info = ""
-        if self.active_pdf:
-            src_info = f"<p><b>Source:</b> <code>{os.path.basename(self.active_pdf)}</code></p>"
-
-        # Convert markdown-like text to HTML
+            chap_title = t
+            chap_meta  = f"Pages {ps}–{pe}"
+        src_name = os.path.basename(self.active_pdf) if self.active_pdf else ""
+        date_str = datetime.now().strftime("%B %d, %Y  %H:%M")
         html_body = self._text_to_html(text)
 
         return f"""<!DOCTYPE html>
-<html><head>
+<html lang="en"><head>
 <meta charset="utf-8">
-<title>AI Teacher Notes</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{chap_title or 'Study Notes'}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body {{ font-family: -apple-system, system-ui, sans-serif; max-width: 900px;
-         margin: 40px auto; padding: 20px; background:#0d1117; color:#e6edf3;
-         line-height: 1.6; }}
-  h1, h2, h3 {{ color:#58a6ff; }}
-  h2 {{ border-bottom: 1px solid #30363d; padding-bottom: 6px; }}
-  code {{ background:#1c2333; padding:2px 6px; border-radius:4px; color:#79c0ff;
-          font-family: 'Courier New', monospace; }}
-  pre {{ background:#1c2333; padding:14px; border-radius:6px; overflow-x:auto; }}
-  pre code {{ background:none; padding:0; }}
-  .meta {{ color:#8b949e; font-size: 0.9em; border-bottom: 1px solid #30363d;
-           padding-bottom: 10px; margin-bottom: 20px; }}
-  strong {{ color:#fff; }}
-  blockquote {{ border-left: 3px solid #58a6ff; padding-left: 12px; color:#8b949e; }}
+  :root {{
+    --ink:      #1a1a2e;
+    --ink-soft: #4a4a6a;
+    --rule:     #d0d0e8;
+    --accent:   #2563eb;
+    --accent2:  #7c3aed;
+    --paper:    #fefefe;
+    --code-bg:  #f0f4ff;
+    --code-ink: #1e3a8a;
+    --warn:     #b45309;
+  }}
+  *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+  body {{
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.85;
+    color: var(--ink);
+    background: #eef0f5;
+    padding: 40px 20px;
+  }}
+
+  .page {{
+    background: var(--paper);
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 56px 72px;
+    border-radius: 4px;
+    box-shadow: 0 2px 24px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
+    border-top: 5px solid var(--accent);
+  }}
+
+  /* ── Header ── */
+  .note-header {{
+    border-bottom: 2px solid var(--rule);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }}
+  .note-header h1 {{
+    font-family: 'Inter', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }}
+  .note-meta {{
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }}
+  .note-meta span::before {{ margin-right: 4px; }}
+
+  /* ── Headings ── */
+  h1 {{ font-size: 1.45rem; color: var(--accent);  margin: 2rem 0 0.6rem; font-weight: 700; }}
+  h2 {{
+    font-family: 'Inter', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 2.2rem 0 0.5rem;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid var(--rule);
+    letter-spacing: -0.01em;
+  }}
+  h3 {{
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent2);
+    margin: 1.6rem 0 0.4rem;
+  }}
+  h4 {{
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--warn);
+    margin: 1.2rem 0 0.3rem;
+  }}
+
+  /* ── Body text ── */
+  p {{ margin-bottom: 1rem; }}
+  strong {{ font-weight: 700; color: var(--ink); }}
+  em {{ font-style: italic; color: var(--ink-soft); }}
+
+  /* ── Lists ── */
+  ul, ol {{
+    margin: 0.6rem 0 1rem 1.4rem;
+    padding: 0;
+  }}
+  li {{
+    margin-bottom: 0.35rem;
+    padding-left: 4px;
+  }}
+  li::marker {{ color: var(--accent); font-weight: 700; }}
+
+  /* ── Inline code ── */
+  code {{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.85em;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #c7d2fe;
+    white-space: nowrap;
+  }}
+
+  /* ── Code blocks ── */
+  pre {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.84rem;
+    line-height: 1.65;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px 24px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.2rem 0;
+    border-left: 4px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }}
+  pre code {{
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    white-space: pre;
+  }}
+
+  /* ── Mermaid diagrams ── */
+  .mermaid {{
+    background: #f8faff;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 1.4rem 0;
+    text-align: center;
+    overflow-x: auto;
+  }}
+
+  /* ── Blockquote ── */
+  blockquote {{
+    border-left: 4px solid var(--accent2);
+    margin: 1.2rem 0;
+    padding: 10px 18px;
+    background: #faf5ff;
+    border-radius: 0 6px 6px 0;
+    color: var(--ink-soft);
+    font-style: italic;
+  }}
+
+  /* ── Divider ── */
+  hr {{
+    border: none;
+    border-top: 1.5px solid var(--rule);
+    margin: 2rem 0;
+  }}
+
+  /* ── Footer ── */
+  .note-footer {{
+    margin-top: 3rem;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    text-align: center;
+  }}
+  .note-footer a {{ color: var(--accent); text-decoration: none; }}
+
+  /* ── Print ── */
+  @media print {{
+    body {{ background: white; padding: 0; }}
+    .page {{ box-shadow: none; border-radius: 0; padding: 20mm 18mm; border-top: none; }}
+    pre {{ break-inside: avoid; }}
+    h2, h3 {{ break-after: avoid; }}
+  }}
 </style>
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({{ startOnLoad: true, theme: 'dark' }});
+  mermaid.initialize({{ startOnLoad: true, theme: 'default' }});
 </script>
-</head><body>
-<h1>📚 AI Teacher Notes</h1>
-<div class="meta">
-  <p><b>Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-  {chap_info}
-  {src_info}
+</head>
+<body>
+<div class="page">
+  <div class="note-header">
+    <h1>📚 {chap_title or 'Study Notes'}</h1>
+    <div class="note-meta">
+      <span>📅 {date_str}</span>
+      {"<span>📄 " + src_name + "</span>" if src_name else ""}
+      {"<span>🔖 " + chap_meta + "</span>" if chap_meta else ""}
+    </div>
+  </div>
+  {html_body}
+  <div class="note-footer">
+    Generated by <a href="https://github.com/Ashut90/pdf-tutor">PDF Tutor</a>
+    &nbsp;·&nbsp; <a href="https://github.com/Ashut90/pdf-tutor">⭐ Star on GitHub</a>
+  </div>
 </div>
-<hr>
-{html_body}
 </body></html>"""
 
     def _text_to_html(self, text):

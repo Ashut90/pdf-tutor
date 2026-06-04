@@ -66,23 +66,11 @@ Built around the **VARK model** (Visual, Auditory, Read/Write, Kinesthetic):
 
 ## 🖼️ Screenshots
 
-<!--
-  Replace these with actual screenshots once captured.
-  Suggested shots:
-    1. assets/screenshot-main.png  — main 3-pane window with a PDF loaded
-    2. assets/screenshot-vark.png  — VARK mode selector
-    3. assets/screenshot-mindmap.png — exported mindmap in browser
+| Main window | Exported mind map |
+|:-----------:|:-----------------:|
+| ![Main window](assets/screenshot-main.png) | ![Mind map](assets/screenshot-mindmap.png) |
 
-  To record a GIF on Ubuntu (install once, drag-select region):
-    sudo apt install peek && peek
-
-  Then reference it at the very top of this README:
-    ![PDF Tutor demo](assets/demo.gif)
--->
-
-| Main window | VARK learning modes |
-|:-----------:|:-------------------:|
-| _coming soon_ | _coming soon_ |
+> Save `assets/screenshot-main.png` and `assets/screenshot-mindmap.png` to make these show up.
 
 ---
 
