@@ -4,6 +4,8 @@ Sets up the ttk theme and launches the main window.
 """
 import os
 import sys
+import warnings
+warnings.filterwarnings("ignore", message="Unable to import Axes3D")
 from tkinter import ttk
 from pdf_tutor.config import INPUT, TEXT, ACCENT, BORDER, MUTED
 from pdf_tutor.ui.app import App

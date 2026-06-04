@@ -60,6 +60,7 @@ class App(tk.Tk):
         self.history = []
         self.is_busy = False
         self.active_pdf = None
+        self._tts_engine = None   # persistent engine avoids espeak GC callback crash
         self.pdf_text = ""
         self.pdf_total = 0
         self.chapters = []
@@ -101,9 +102,11 @@ class App(tk.Tk):
         def speak():
             try:
                 if TTS_OFFLINE_OK:
-                    engine = pyttsx3.init()
-                    engine.setProperty("rate", 175)
-                    engine.say(clean[:5000])  # cap to avoid huge audio
+                    if self._tts_engine is None:
+                        self._tts_engine = pyttsx3.init()
+                        self._tts_engine.setProperty("rate", 175)
+                    engine = self._tts_engine
+                    engine.say(clean[:5000])
                     engine.runAndWait()
                 elif TTS_ONLINE_OK:
                     import tempfile, subprocess, sys as _sys
