@@ -23,9 +23,11 @@ dependencies = [
     "Pillow>=10.0.0",
     "matplotlib>=3.7.0",
     "graphviz>=0.20.0",
-    "pyttsx3>=2.90",
-    "gTTS>=2.4.0",
 ]
+
+[project.optional-dependencies]
+tts = ["pyttsx3>=2.90", "gTTS>=2.4.0"]
+dev = ["pytest>=7.0", "pyttsx3>=2.90", "gTTS>=2.4.0"]
 
 [project.scripts]
 pdf-tutor = "pdf_tutor.__main__:main"
@@ -33,6 +35,9 @@ pdf-tutor = "pdf_tutor.__main__:main"
 [project.urls]
 Homepage = "https://github.com/Ashut90/pdf-tutor"
 Issues = "https://github.com/Ashut90/pdf-tutor/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
