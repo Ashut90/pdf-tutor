@@ -245,18 +245,24 @@ class App(tk.Tk):
 
         self._status("Generating mindmap...", WARN)
         title = self.selected_chapter[0]
-        prompt = (f"Create a Mermaid mindmap from the following content. "
-                  f"Output ONLY the mermaid mindmap code, nothing else. "
-                  f"Use this exact format:\n"
+        prompt = (f"Create a Mermaid mindmap from the following content.\n\n"
+                  f"STRICT RULES:\n"
+                  f"- Output ONLY the raw mermaid code. No backticks, no prose, no explanation.\n"
+                  f"- Start with 'mindmap' on the first line.\n"
+                  f"- Root node: root(({title}))\n"
+                  f"- Max 3 levels deep.\n"
+                  f"- Max 6 top-level topics.\n"
+                  f"- Each node label MUST be 1-4 words only. NO long sentences.\n"
+                  f"- Use simple nouns or short phrases. Never full sentences.\n\n"
+                  f"EXAMPLE FORMAT:\n"
                   f"mindmap\n"
-                  f"  root(({title}))\n"
-                  f"    Topic1\n"
-                  f"      Subtopic1.1\n"
-                  f"      Subtopic1.2\n"
-                  f"    Topic2\n"
-                  f"      Subtopic2.1\n\n"
-                  f"Make it 3-4 levels deep, 5-8 top-level topics. No backticks. No prose.\n\n"
-                  f"Content:\n{text[:6000]}")
+                  f"  root((Topic))\n"
+                  f"    Concept A\n"
+                  f"      Key Point\n"
+                  f"      Example\n"
+                  f"    Concept B\n"
+                  f"      Sub Idea\n\n"
+                  f"Content:\n{text[:4000]}")
 
         pname = self.pv.get()
         prov = PROVIDERS[pname]
@@ -325,8 +331,8 @@ class App(tk.Tk):
   .btn:hover{{background:#30363d}}
   .btn-blue{{background:#1f6feb;border-color:#1f6feb;color:#fff}}
   .btn-blue:hover{{background:#388bfd}}
-  #canvas{{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:40px 24px;background:#0d1117}}
-  .mermaid svg{{border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:24px;background:#111827!important;font-family:'Inter',sans-serif!important;font-size:14px!important}}
+  #canvas{{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:40px 24px;background:#f6f8fa}}
+  .mermaid svg{{border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);padding:32px;background:#ffffff!important;font-family:'Inter',sans-serif!important;font-size:14px!important}}
   footer{{background:#161b22;border-top:1px solid #30363d;padding:10px 24px;font-size:11px;color:#8b949e;text-align:center}}
   footer a{{color:#58a6ff;text-decoration:none}}
   footer a:hover{{text-decoration:underline}}
@@ -359,7 +365,8 @@ class App(tk.Tk):
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 mermaid.initialize({{
   startOnLoad: true,
-  theme: 'dark',
+  theme: 'default',
+  mindmap: {{ padding: 20 }},
 }});
 
 // zoom state
