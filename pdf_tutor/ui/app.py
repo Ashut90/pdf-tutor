@@ -234,7 +234,7 @@ class App(tk.Tk):
 
     # ── MINDMAP EXPORT ────────────────────────────────────────────────────
     def _export_mindmap(self):
-        """Generate a Mermaid mindmap and save as PNG or open in browser."""
+        """Generate a Markmap mindmap (horizontal tree) and save as HTML."""
         text = self._get_last_ai_response()
         if not text:
             messagebox.showinfo("Nothing to Export", "Generate AI content first.")
@@ -245,23 +245,22 @@ class App(tk.Tk):
 
         self._status("Generating mindmap...", WARN)
         title = self.selected_chapter[0]
-        prompt = (f"Create a Mermaid mindmap from the following content.\n\n"
+        prompt = (f"Create a mindmap outline for: {title}\n\n"
                   f"STRICT RULES:\n"
-                  f"- Output ONLY the raw mermaid code. No backticks, no prose, no explanation.\n"
-                  f"- Start with 'mindmap' on the first line.\n"
-                  f"- Root node: root(({title}))\n"
-                  f"- Max 3 levels deep.\n"
-                  f"- Max 6 top-level topics.\n"
-                  f"- Each node label MUST be 1-4 words only. NO long sentences.\n"
-                  f"- Use simple nouns or short phrases. Never full sentences.\n\n"
-                  f"EXAMPLE FORMAT:\n"
-                  f"mindmap\n"
-                  f"  root((Topic))\n"
-                  f"    Concept A\n"
-                  f"      Key Point\n"
-                  f"      Example\n"
-                  f"    Concept B\n"
-                  f"      Sub Idea\n\n"
+                  f"- Output ONLY a Markdown outline. No prose, no explanation, no backticks.\n"
+                  f"- First line must be: # {title}\n"
+                  f"- Use ## for main branches (max 6).\n"
+                  f"- Use ### for sub-topics (max 4 per branch).\n"
+                  f"- Use #### for details (optional, max 2 per sub-topic).\n"
+                  f"- Each line must be SHORT: 2-5 words maximum. No sentences.\n\n"
+                  f"EXAMPLE:\n"
+                  f"# The Kernel\n"
+                  f"## Core Functions\n"
+                  f"### Process Scheduling\n"
+                  f"### Memory Management\n"
+                  f"## System Calls\n"
+                  f"### API Interface\n"
+                  f"### User Space Bridge\n\n"
                   f"Content:\n{text[:4000]}")
 
         pname = self.pv.get()
@@ -273,19 +272,13 @@ class App(tk.Tk):
             try:
                 msgs = [{"role": "user", "content": prompt}]
                 response = self.client.chat(prov["id"], model, key, msgs)
-                # Extract mermaid code
-                mmd_match = re.search(r'(mindmap[\s\S]+?)(?=\n\n|$)', response)
-                if not mmd_match:
-                    # Try fallback: assume whole response is mermaid
-                    mmd = response.strip()
-                    if "mindmap" not in mmd[:30]:
-                        self.after(0, lambda: messagebox.showwarning(
-                            "Parse Failed", "Could not extract mindmap. Try again."))
-                        self.after(0, lambda: self._status("Ready", GREEN))
-                        return
-                else:
-                    mmd = mmd_match.group(1).strip()
-                self.after(0, lambda m=mmd: self._save_mindmap_file(m, title))
+                md = response.strip()
+                # strip code fences if AI wrapped it
+                md = re.sub(r'^```[a-z]*\n?', '', md, flags=re.MULTILINE)
+                md = re.sub(r'```$', '', md, flags=re.MULTILINE).strip()
+                if not md.startswith('#'):
+                    md = f"# {title}\n" + md
+                self.after(0, lambda m=md: self._save_mindmap_file(m, title))
             except Exception as e:
                 self.after(0, lambda err=str(e):
                             messagebox.showerror("Mindmap Gen Error", err))
@@ -293,7 +286,7 @@ class App(tk.Tk):
 
         threading.Thread(target=go, daemon=True).start()
 
-    def _save_mindmap_file(self, mmd_code, title):
+    def _save_mindmap_file(self, md_content, title):
         from datetime import datetime
         ts = datetime.now().strftime("%Y-%m-%d_%H%M")
         safe = re.sub(r'[^\w\s-]', '', title).strip()[:40]
@@ -305,15 +298,14 @@ class App(tk.Tk):
             initialfile=default,
             defaultextension=".html",
             filetypes=[("HTML (renders in browser)", "*.html"),
-                       ("Mermaid source", "*.mmd"), ("All", "*.*")])
+                       ("Markdown source", "*.md"), ("All", "*.*")])
         if not path:
             return
         try:
-            if path.endswith(".mmd"):
+            if path.endswith(".md"):
                 with open(path, "w", encoding="utf-8") as f:
-                    f.write(mmd_code)
+                    f.write(md_content)
             else:
-                # HTML wrapper with mermaid CDN
                 html = f"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -322,20 +314,18 @@ class App(tk.Tk):
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
   *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-  body{{background:#0d1117;font-family:'Inter',-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column}}
-  header{{background:#161b22;border-bottom:1px solid #30363d;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-  header h1{{font-size:17px;font-weight:700;color:#58a6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+  body{{background:#f6f8fa;font-family:'Inter',-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column}}
+  header{{background:#0d1117;border-bottom:1px solid #30363d;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+  header h1{{font-size:17px;font-weight:700;color:#58a6ff}}
   header .sub{{font-size:11px;color:#8b949e;margin-top:2px}}
   .toolbar{{display:flex;gap:8px}}
-  .btn{{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;font-family:inherit;cursor:pointer;transition:background .15s}}
+  .btn{{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;font-family:inherit;cursor:pointer}}
   .btn:hover{{background:#30363d}}
   .btn-blue{{background:#1f6feb;border-color:#1f6feb;color:#fff}}
   .btn-blue:hover{{background:#388bfd}}
-  #canvas{{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:40px 24px;background:#f6f8fa}}
-  .mermaid svg{{border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);padding:32px;background:#ffffff!important;font-family:'Inter',sans-serif!important;font-size:14px!important}}
-  footer{{background:#161b22;border-top:1px solid #30363d;padding:10px 24px;font-size:11px;color:#8b949e;text-align:center}}
+  #mindmap{{width:100%;height:calc(100vh - 90px)}}
+  footer{{background:#0d1117;border-top:1px solid #30363d;padding:8px 24px;font-size:11px;color:#8b949e;text-align:center}}
   footer a{{color:#58a6ff;text-decoration:none}}
-  footer a:hover{{text-decoration:underline}}
 </style>
 </head>
 <body>
@@ -345,58 +335,49 @@ class App(tk.Tk):
     <div class="sub">Mind Map · Generated by PDF Tutor</div>
   </div>
   <div class="toolbar">
-    <button class="btn" id="btnZoomOut">－ Zoom out</button>
-    <button class="btn" id="btnReset">Reset</button>
-    <button class="btn" id="btnZoomIn">＋ Zoom in</button>
     <button class="btn btn-blue" id="btnPng">⬇ Save PNG</button>
   </div>
 </header>
-<div id="canvas">
-  <div class="mermaid" id="mm">
-{mmd_code}
-  </div>
-</div>
+<svg id="mindmap"></svg>
 <footer>
   Generated by <a href="https://github.com/Ashut90/pdf-tutor">PDF Tutor</a>
   &nbsp;·&nbsp;
   <a href="https://github.com/Ashut90/pdf-tutor">⭐ Star on GitHub</a>
 </footer>
-<script type="module">
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-mermaid.initialize({{
-  startOnLoad: true,
-  theme: 'default',
-  mindmap: {{ padding: 20 }},
-}});
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15"></script>
+<script>
+const md = {repr(md_content)};
+const {{ Transformer, builtInPlugins }} = window.markmap;
+const transformer = new Transformer(builtInPlugins);
+const {{ root, features }} = transformer.transform(md);
+const {{ Markmap, loadCSS, loadJS }} = window.markmap;
+const {{ styles, scripts }} = transformer.getUsedAssets(features);
+if (styles) loadCSS(styles);
+if (scripts) loadJS(scripts, {{ getMarkmap: () => window.markmap }});
+const mm = Markmap.create('#mindmap', {{
+  color: (node) => ['#1f6feb','#1a7f37','#6e40c9','#b45309','#0e7490','#be185d'][node.depth % 6],
+  duration: 400,
+  maxWidth: 220,
+  zoom: true,
+  pan: true,
+}}, root);
 
-// zoom state
-let scale = 1;
-const canvas = document.getElementById('canvas');
-const mm     = document.getElementById('mm');
-const setScale = s => {{ scale = Math.min(3, Math.max(0.3, s)); mm.style.transform = `scale(${{scale}})`; mm.style.transformOrigin='top center'; }};
-document.getElementById('btnZoomIn') .onclick = () => setScale(scale + 0.15);
-document.getElementById('btnZoomOut').onclick = () => setScale(scale - 0.15);
-document.getElementById('btnReset')  .onclick = () => setScale(1);
-canvas.addEventListener('wheel', e => {{ e.preventDefault(); setScale(scale - e.deltaY * 0.001); }}, {{passive:false}});
-
-// save as high-res PNG
 document.getElementById('btnPng').onclick = () => {{
-  const svg = mm.querySelector('svg');
-  if (!svg) return;
-  const w = svg.getBoundingClientRect().width  * 2;
-  const h = svg.getBoundingClientRect().height * 2;
+  const svg = document.getElementById('mindmap');
   const xml = new XMLSerializer().serializeToString(svg);
   const blob = new Blob([xml], {{type:'image/svg+xml'}});
-  const url  = URL.createObjectURL(blob);
-  const img  = new Image();
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
   img.onload = () => {{
     const c = document.createElement('canvas');
-    c.width = w; c.height = h;
+    c.width = img.width * 2; c.height = img.height * 2;
     const ctx = c.getContext('2d');
-    ctx.scale(2, 2);
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(img, 0, 0);
+    ctx.scale(2,2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,img.width,img.height);
+    ctx.drawImage(img,0,0);
     const a = document.createElement('a');
     a.download = '{safe}_mindmap.png';
     a.href = c.toDataURL('image/png');
