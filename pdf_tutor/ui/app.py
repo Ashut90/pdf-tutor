@@ -1628,8 +1628,36 @@ document.getElementById('btnPng').onclick = () => {{
 
     # ── SAVE / EXPORT METHODS ─────────────────────────────────────────────
     def _get_chat_text(self):
-        """Return full chat content as plain text."""
-        return self.chat_view.get("1.0", "end").strip()
+        """Return only AI response content — strips all UI chrome."""
+        raw = self.chat_view.get("1.0", "end")
+
+        # Split into segments on every AI Teacher marker
+        ai_marker  = "🤖 AI Teacher"
+        usr_marker = "👤"
+        segments = raw.split(ai_marker)
+
+        collected = []
+        for seg in segments[1:]:  # skip everything before first AI response
+            # Cut off at the next user message if present
+            cut = seg.find(usr_marker)
+            if cut > 0:
+                seg = seg[:cut]
+            # Strip the inline provider badge "(Google Gemini · model)" on first line
+            lines = seg.splitlines()
+            if lines and re.match(r'^\s*\(.*\)\s*$', lines[0]):
+                lines = lines[1:]
+            seg = "\n".join(lines).strip()
+            if seg:
+                collected.append(seg)
+
+        if not collected:
+            # Fallback: return raw minus obvious UI-only lines
+            lines = raw.splitlines()
+            clean = [l for l in lines if not re.match(
+                r'^\s*[✓▶ℹ⚠✗]\s|^(Ask:|VARK Tools:|Save notes:)', l)]
+            return "\n".join(clean).strip()
+
+        return "\n\n---\n\n".join(collected)
 
     def _copy_all(self):
         """Copy entire chat to system clipboard."""
