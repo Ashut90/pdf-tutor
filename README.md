@@ -6,7 +6,7 @@
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#installation)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-![PDF Tutor demo](assets/demo.gif)
+![PDF Tutor demo](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/demo.gif)
 
 ---
 
@@ -22,7 +22,7 @@ So I built this. You drop a PDF in, pick a chapter, and it explains it to you â€
 
 | Main window | Exported mind map |
 |:-----------:|:-----------------:|
-| ![Main window](assets/screenshot-main.png) | ![Mind map](assets/screenshot-mindmap.png) |
+| ![Main window](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/screenshot-main.png) | ![Mind map](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/screenshot-mindmap.png) |
 
 ---
 
@@ -93,7 +93,7 @@ Get a free key from [aistudio.google.com/apikey](https://aistudio.google.com/api
 
 ## Architecture
 
-![Architecture flow](assets/architecture.svg)
+![Architecture flow](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/architecture.svg)
 
 The UI loads a chapter via `core/pdf.py`, sends the text with a mode-specific prompt (`learning/modes.py`) to the selected provider (`ai/client.py`), and renders any diagrams or charts the AI produces (`rendering/visuals.py`).
 
