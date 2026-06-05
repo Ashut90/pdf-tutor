@@ -1,234 +1,159 @@
-# 📚 PDF Tutor
-
-> Study any PDF the way *you* learn best — locally, privately, with diagrams, audio, flashcards, and hands-on commands.
+# PDF Tutor
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/Ashut90/pdf-tutor/actions/workflows/ci.yml/badge.svg)](https://github.com/Ashut90/pdf-tutor/actions/workflows/ci.yml)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#-quick-start)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#installation)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ![PDF Tutor demo](assets/demo.gif)
 
-PDF Tutor reads the table of contents of any PDF, lets you pick a chapter, and explains it through your preferred AI model — **fully offline** on your own machine, or via **free cloud APIs** for higher quality. It adapts to how *you* learn using the VARK model: Visual diagrams, Auditory TTS, Read/Write notes, or Kinesthetic hands-on commands.
+---
+
+I read a lot of technical PDFs — textbooks, research papers, course materials. The problem is that reading them passively doesn't really work for me. I'd finish a chapter and retain almost nothing.
+
+I tried highlighting, re-reading, watching videos on the same topic — still slow. What actually helped was having someone *explain* it to me in different ways. A diagram here, a quick quiz there, hearing it out loud.
+
+So I built this. You drop a PDF in, pick a chapter, and it explains it to you — using whichever style actually works for your brain. Diagrams if you're visual, audio if you're auditory, structured notes, or hands-on commands if you learn by doing. It can also run completely offline if you don't want your study material leaving your machine.
 
 ---
 
-## ⚡ Try it in 30 seconds
-
-```bash
-git clone https://github.com/Ashut90/pdf-tutor.git
-cd pdf-tutor
-pip install -r requirements.txt
-python -m pdf_tutor
-```
-
-Drop any PDF onto the app, pick a chapter, pick a learning mode — that's it.
-
----
-
-## ✨ Features
-
-### 📖 Smart PDF handling
-- **Auto-detects chapters** from the PDF's table of contents
-- **Dual viewer** — read extracted text or view actual rendered pages
-- **Page-range control** — load a full chapter or a single section
-
-### 🤖 Four AI providers (use whichever fits)
-| Provider | Cost | Runs | Best for |
-|----------|------|------|----------|
-| **Ollama** | Free | Locally (offline) | Privacy, no limits, no internet |
-| **Google Gemini** | Free tier | Cloud | Whole chapters (1M token context) |
-| **Groq** | Free tier | Cloud | Fast inference |
-| **OpenRouter** | Free tier | Cloud | Model variety |
-
-### 🧠 VARK learning system
-Built around the **VARK model** (Visual, Auditory, Read/Write, Kinesthetic):
-- **🎯 Style detector** — a short quiz that recommends your learning style
-- **🎨 Visual mode** — mind maps, flowcharts, comparison tables
-- **🎧 Auditory mode** — conversational explanations + text-to-speech playback
-- **📝 Read/Write mode** — definitions, structured notes, writing prompts
-- **🛠️ Kinesthetic mode** — hands-on terminal commands and code experiments
-- **🌐 Omni mode** — all four styles in a single response
-
-### 🎨 Rich visual output
-- **Mermaid diagrams** rendered via online APIs with a **local graphviz fallback** (works offline)
-- **Charts** generated locally with matplotlib
-- **ASCII diagrams** for reliable inline visuals
-
-### 💾 Export & study tools
-- **Save notes** as Markdown, HTML, or plain text
-- **Anki flashcard export** — auto-generates spaced-repetition cards
-- **Mindmap export** — interactive HTML mindmaps
-- **Text-to-speech** — listen to any explanation
-
----
-
-## 🖼️ Screenshots
+## Screenshots
 
 | Main window | Exported mind map |
 |:-----------:|:-----------------:|
 | ![Main window](assets/screenshot-main.png) | ![Mind map](assets/screenshot-mindmap.png) |
 
-> Save `assets/screenshot-main.png` and `assets/screenshot-mindmap.png` to make these show up.
+---
+
+## How it works
+
+The app reads the table of contents from your PDF and lets you pick a chapter. It sends that chapter's text to whichever AI you've set up and asks it to explain things in the style you want.
+
+The learning modes are based on [VARK](https://vark-learn.com/) — Visual, Auditory, Read/Write, Kinesthetic. There's also a quiz that figures out which style fits you, and an Omni mode that does all four at once.
+
+**Visual** — mind maps, flowcharts, comparison tables
+**Auditory** — conversational explanation + reads it out loud (TTS)
+**Read/Write** — structured notes, definitions, writing prompts
+**Kinesthetic** — terminal commands and code experiments you can actually run
+
+You can export notes as Markdown or HTML, generate Anki flashcards, or save interactive mindmaps as HTML files.
 
 ---
 
-## 🚀 Quick Start
+## AI providers
 
-### Prerequisites
-- Python 3.9+
-- (Optional) [Ollama](https://ollama.com) for offline local models
-- (Optional) `graphviz` and `espeak-ng` system packages for diagram fallback and TTS
+It supports four providers — use whichever you already have access to:
 
-### Installation
+| Provider | Cost | Where it runs |
+|----------|------|---------------|
+| **Ollama** | Free | Your machine (fully offline) |
+| **Google Gemini** | Free tier | Cloud |
+| **Groq** | Free tier | Cloud |
+| **OpenRouter** | Free tier | Cloud |
 
-PDF Tutor runs on **Linux, Windows, and macOS** — anywhere Python 3.9+ works.
+I mostly use Gemini because its 1M token context window handles entire chapters without truncation. Ollama is great when I'm on a plane or don't want data leaving my machine.
 
-**1. Clone and enter the project:**
+---
+
+## Installation
+
 ```bash
 git clone https://github.com/Ashut90/pdf-tutor.git
 cd pdf-tutor
-```
-
-**2. Create a virtual environment and install Python dependencies:**
-
-<details open>
-<summary><b>Linux / macOS</b></summary>
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
-```
-</details>
-
-<details>
-<summary><b>Windows (PowerShell)</b></summary>
-
-```powershell
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-```
-</details>
-
-**3. (Optional) install system packages for full features:**
-
-| Feature | Linux (Debian/Ubuntu) | macOS (Homebrew) | Windows |
-|---------|----------------------|------------------|---------|
-| Diagram fallback | `sudo apt install graphviz` | `brew install graphviz` | [graphviz.org/download](https://graphviz.org/download/) |
-| Offline TTS | `sudo apt install espeak-ng` | built-in (uses `say`) | built-in (SAPI5) |
-
-> These are optional. Without graphviz, diagrams still render via online services. Without espeak-ng, TTS falls back to the online voice (gTTS).
-
-### Run
-
-Same command on every OS:
-
-```bash
 python -m pdf_tutor
-# or
-python run.py
 ```
 
----
+That's enough to get started. Two optional system packages unlock extra features:
 
-## 🔧 Setting up AI providers
-
-### Option 1 — Ollama (free, local, offline)
 ```bash
-# Install Ollama from https://ollama.com, then pull a model:
-ollama pull qwen2.5-coder:7b     # great for technical content
-ollama serve                     # starts the local server
+sudo apt install graphviz   # diagram fallback when offline
+sudo apt install espeak-ng  # offline TTS (otherwise falls back to gTTS)
 ```
-In the app: select **Ollama**, no API key needed.
 
-### Option 2 — Google Gemini (free, best for whole chapters)
-1. Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-2. In the app: select **Google Gemini**, paste your key
-3. Gemini's 1M-token context handles entire chapters without truncation
-
-### Option 3 — Groq / OpenRouter
-Get free keys from [console.groq.com](https://console.groq.com) or [openrouter.ai](https://openrouter.ai) and paste into the app.
+On macOS, replace `apt` with `brew`. On Windows, `graphviz` has an installer at [graphviz.org/download](https://graphviz.org/download/) and TTS uses SAPI5 built-in.
 
 ---
 
-## 📂 Project Structure
+## Setting up a provider
+
+**Ollama (offline):**
+```bash
+# Install from https://ollama.com, then:
+ollama pull qwen2.5-coder:7b
+ollama serve
+```
+Select Ollama in the app — no key needed.
+
+**Gemini / Groq / OpenRouter:**
+Get a free key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey), [console.groq.com](https://console.groq.com), or [openrouter.ai](https://openrouter.ai), paste it into the app, done.
+
+---
+
+## Architecture
+
+![Architecture flow](assets/architecture.svg)
+
+The UI loads a chapter via `core/pdf.py`, sends the text with a mode-specific prompt (`learning/modes.py`) to the selected provider (`ai/client.py`), and renders any diagrams or charts the AI produces (`rendering/visuals.py`).
+
+---
+
+## Project structure
 
 ```
 pdf-tutor/
 ├── pdf_tutor/
-│   ├── __init__.py
-│   ├── __main__.py          # entry point: python -m pdf_tutor
-│   ├── config.py            # theme, fonts, providers, limits
-│   ├── core/
-│   │   └── pdf.py           # TOC extraction, text/page rendering
-│   ├── ai/
-│   │   └── client.py        # unified client for all 4 providers
-│   ├── rendering/
-│   │   └── visuals.py       # mermaid / chart / graphviz rendering
-│   ├── learning/
-│   │   └── modes.py         # teaching modes + VARK prompts
-│   └── ui/
-│       └── app.py           # Tkinter GUI (3-pane layout)
-├── tests/                   # pytest suite
+│   ├── __main__.py          # entry point
+│   ├── config.py            # theme, fonts, providers
+│   ├── core/pdf.py          # TOC extraction, text/page rendering
+│   ├── ai/client.py         # unified client for all 4 providers
+│   ├── rendering/visuals.py # diagram / chart rendering
+│   ├── learning/modes.py    # VARK prompts and teaching modes
+│   └── ui/app.py            # Tkinter GUI
+├── tests/
 ├── requirements.txt
-├── pyproject.toml
-├── LICENSE
-└── README.md
+└── pyproject.toml
 ```
 
 ---
 
-## 🏗️ Architecture
-
-![Architecture flow](assets/architecture.svg)
-
-The UI loads a chapter via `core/pdf.py`, sends its text plus a mode-specific
-prompt (`learning/modes.py`) to the selected provider (`ai/client.py`), and
-renders any diagrams the AI produces (`rendering/visuals.py`).
-
----
-
-## 🧪 Running tests
+## Running tests
 
 ```bash
-pip install -r requirements-dev.txt
+pip install pytest
 pytest -v
 ```
 
 ---
 
-## 🗺️ Roadmap
+## What's next
 
-- [ ] Conversation history persistence across sessions
-- [ ] Multi-PDF library with search
-- [ ] Spaced-repetition scheduler built in (beyond Anki export)
-- [ ] Support for EPUB and DjVu formats
-- [ ] Configurable prompt templates per subject
+Things I want to add but haven't gotten to yet:
 
----
+- Conversation history that persists across sessions
+- Multi-PDF library with search
+- EPUB and DjVu support
+- Configurable prompt templates per subject
 
-## 🤝 Contributing
-
-Contributions are welcome. Please open an issue to discuss major changes first.
-
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Run the tests (`pytest`)
-4. Commit and open a pull request
+If any of these interest you, feel free to open a PR.
 
 ---
 
-## 📝 License
+## Contributing
+
+Open an issue first if it's a bigger change — happy to discuss direction before you spend time on it. For small fixes, just open a PR directly.
+
+---
+
+## License
 
 MIT — see [LICENSE](LICENSE).
 
 ---
 
-## 🙏 Acknowledgments
+## Credits
 
 - [PyMuPDF](https://pymupdf.readthedocs.io/) for PDF parsing
 - [Ollama](https://ollama.com), [Groq](https://groq.com), [Google AI Studio](https://aistudio.google.com), [OpenRouter](https://openrouter.ai) for model access
-- The [VARK model](https://vark-learn.com/) by Neil Fleming for the learning-styles framework
+- [VARK model](https://vark-learn.com/) by Neil Fleming
