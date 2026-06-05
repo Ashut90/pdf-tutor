@@ -72,7 +72,9 @@ class App(tk.Tk):
         self._followup_frame = None
         # buffer for accumulating AI response (for post-render visual extraction)
         self._response_buffer = ""
-        self._chat_image_refs = []  # keep references so they don't garbage collect
+        self._chat_image_refs = []  # keep PhotoImage refs so they don't GC
+        self._chat_pil_refs   = []  # keep PIL originals for zoom viewer
+        self._custom_instructions = ""
 
         self._build_ui()
         self._apply_provider()
@@ -767,6 +769,24 @@ document.getElementById('btnPng').onclick = () => {{
                   font=SM, cursor="hand2", padx=10, pady=3,
                   command=self._copy_all).pack(side="left", padx=2)
 
+        # ── Custom Instructions (collapsible) ────────────────────────────────
+        ci_toggle_row = tk.Frame(p, bg=BG)
+        ci_toggle_row.pack(fill="x", padx=10, pady=(2, 0))
+        self._ci_btn = tk.Button(ci_toggle_row, text="📝 Custom instructions (off)",
+                                  bg=CARD, fg=MUTED, font=SM, relief="flat", cursor="hand2",
+                                  padx=10, pady=2, command=self._toggle_custom_instructions)
+        self._ci_btn.pack(side="left")
+
+        self._ci_frame = tk.Frame(p, bg=BG)
+        tk.Label(self._ci_frame, text="Extra instructions added to every AI request:",
+                 bg=BG, fg=MUTED, font=SM).pack(anchor="w", padx=10, pady=(4, 0))
+        self._ci_box = scrolledtext.ScrolledText(
+            self._ci_frame, wrap="word", bg=INPUT, fg=TEXT, font=SM,
+            relief="flat", bd=0, height=2, insertbackground=TEXT, padx=8, pady=6)
+        self._ci_box.pack(fill="x", padx=10, pady=(2, 4))
+        self._ci_box.bind("<KeyRelease>", lambda e: self._update_custom_instructions())
+        # hidden by default
+
         inp = tk.Frame(p, bg=BG)
         inp.pack(fill="x", padx=10, pady=4)
 
@@ -1088,9 +1108,11 @@ document.getElementById('btnPng').onclick = () => {{
 
         def run():
             try:
-                # Truncate history aggressively for cloud APIs to avoid 413
+                effective_sys = sys_prompt
+                if self._custom_instructions:
+                    effective_sys += f"\n\nADDITIONAL USER INSTRUCTIONS:\n{self._custom_instructions}"
                 history_size = 2 if prov["id"] in ("groq", "openrouter") else 6
-                msgs = [{"role": "system", "content": sys_prompt}] + self.history[-history_size:]
+                msgs = [{"role": "system", "content": effective_sys}] + self.history[-history_size:]
                 full = self.client.chat(prov["id"], model, key, msgs,
                                          lambda c: self.after(0, lambda x=c: self._chunk(x)))
                 self.history.append({"role": "assistant", "content": full})
@@ -1374,14 +1396,6 @@ document.getElementById('btnPng').onclick = () => {{
     def _insert_image_at(self, idx, pil_img):
         try:
             self.chat_view.config(state="normal")
-            # Resize if too wide
-            max_w = max(self.chat_view.winfo_width() - 60, 400)
-            if pil_img.width > max_w:
-                scale = max_w / pil_img.width
-                pil_img = pil_img.resize((max_w, int(pil_img.height * scale)), Image.LANCZOS)
-            photo = ImageTk.PhotoImage(pil_img, master=self.chat_view)
-            self._chat_image_refs.append(photo)  # CRITICAL — keep ref
-            # Find and remove the "rendering..." placeholder line near idx
             try:
                 placeholder = self.chat_view.search("⏳ rendering", idx, "end")
                 if placeholder:
@@ -1389,7 +1403,35 @@ document.getElementById('btnPng').onclick = () => {{
                     self.chat_view.delete(placeholder, line_end)
             except Exception:
                 pass
-            self.chat_view.image_create(idx, image=photo, padx=14, pady=8)
+
+            max_w = max(self.chat_view.winfo_width() - 80, 400)
+            display = pil_img
+            if pil_img.width > max_w:
+                scale = max_w / pil_img.width
+                display = pil_img.resize((max_w, int(pil_img.height * scale)), Image.LANCZOS)
+
+            photo = ImageTk.PhotoImage(display, master=self.chat_view)
+            self._chat_image_refs.append(photo)
+            self._chat_pil_refs.append(pil_img)
+
+            # Embed as a clickable frame so we can attach zoom/copy buttons
+            frame = tk.Frame(self.chat_view, bg=PANEL)
+            img_lbl = tk.Label(frame, image=photo, bg=PANEL, cursor="hand2")
+            img_lbl.pack(padx=14, pady=(8, 2))
+            img_lbl.bind("<Button-1>", lambda e, img=pil_img: self._open_diagram_viewer(img))
+
+            btn_row = tk.Frame(frame, bg=PANEL)
+            btn_row.pack(fill="x", padx=14, pady=(0, 6))
+            tk.Button(btn_row, text="🔍 Zoom / Copy", bg=CARD, fg=BLUE, relief="flat",
+                      font=SM, cursor="hand2", padx=8, pady=2,
+                      command=lambda img=pil_img: self._open_diagram_viewer(img)).pack(side="left", padx=2)
+            tk.Button(btn_row, text="💾 Save PNG", bg=CARD, fg=GREEN, relief="flat",
+                      font=SM, cursor="hand2", padx=8, pady=2,
+                      command=lambda img=pil_img: self._save_diagram_png(img)).pack(side="left", padx=2)
+            tk.Label(btn_row, text="← click image or button to zoom",
+                     bg=PANEL, fg=MUTED, font=SM).pack(side="left", padx=8)
+
+            self.chat_view.window_create(idx, window=frame)
             self.chat_view.insert(f"{idx} +1c", "\n", "a_txt")
             self.chat_view.config(state="disabled")
             self.chat_view.see("end")
@@ -1407,6 +1449,122 @@ document.getElementById('btnPng').onclick = () => {{
             pass
         self.chat_view.insert(idx, text, tag)
         self.chat_view.config(state="disabled")
+
+    def _save_diagram_png(self, pil_img):
+        path = filedialog.asksaveasfilename(
+            title="Save Diagram as PNG", defaultextension=".png",
+            filetypes=[("PNG image", "*.png"), ("All files", "*.*")])
+        if path:
+            pil_img.save(path)
+            self._status("Diagram saved", GREEN)
+
+    def _open_diagram_viewer(self, pil_img):
+        """Zoomable popup viewer — click image or Zoom/Copy button to open."""
+        if Image is None:
+            return
+        win = tk.Toplevel(self)
+        win.title("Diagram Viewer")
+        win.configure(bg=BG)
+        win.geometry("920x680")
+        win.resizable(True, True)
+
+        zoom = [1.0]
+        photo_ref = [None]
+
+        toolbar = tk.Frame(win, bg=BG, pady=6)
+        toolbar.pack(fill="x", padx=10, side="top")
+        zoom_lbl = tk.Label(toolbar, text="100%", bg=BG, fg=MUTED, font=SM, width=6)
+
+        cf = tk.Frame(win, bg=BG)
+        cf.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        canvas = tk.Canvas(cf, bg="#1a1a2e", highlightthickness=0)
+        hbar = tk.Scrollbar(cf, orient="horizontal", command=canvas.xview)
+        vbar = tk.Scrollbar(cf, orient="vertical", command=canvas.yview)
+        canvas.configure(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+        vbar.pack(side="right", fill="y")
+        hbar.pack(side="bottom", fill="x")
+        canvas.pack(fill="both", expand=True)
+
+        def redraw():
+            z = zoom[0]
+            w = max(1, int(pil_img.width * z))
+            h = max(1, int(pil_img.height * z))
+            resized = pil_img.resize((w, h), Image.LANCZOS)
+            photo_ref[0] = ImageTk.PhotoImage(resized, master=win)
+            canvas.delete("all")
+            canvas.create_image(4, 4, anchor="nw", image=photo_ref[0])
+            canvas.configure(scrollregion=(0, 0, w + 8, h + 8))
+            zoom_lbl.config(text=f"{int(z * 100)}%")
+
+        def zoom_in(*_):
+            zoom[0] = min(zoom[0] * 1.2, 6.0); redraw()
+
+        def zoom_out(*_):
+            zoom[0] = max(zoom[0] / 1.2, 0.1); redraw()
+
+        def zoom_fit():
+            win.update_idletasks()
+            cw = canvas.winfo_width() - 16
+            ch = canvas.winfo_height() - 16
+            if cw > 10 and ch > 10:
+                zoom[0] = min(cw / pil_img.width, ch / pil_img.height, 1.0)
+                redraw()
+
+        def save_png():
+            path = filedialog.asksaveasfilename(
+                parent=win, title="Save Diagram as PNG",
+                defaultextension=".png",
+                filetypes=[("PNG image", "*.png"), ("All files", "*.*")])
+            if path:
+                pil_img.save(path)
+                self._status("Diagram saved", GREEN)
+
+        def copy_image():
+            import subprocess, tempfile
+            tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            tmp.close()
+            pil_img.save(tmp.name)
+            try:
+                subprocess.run(["xclip", "-selection", "clipboard",
+                                "-t", "image/png", "-i", tmp.name],
+                               check=True, capture_output=True)
+                self._status("Diagram copied to clipboard", GREEN)
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                try:
+                    subprocess.run(["xdg-open", tmp.name], capture_output=True)
+                    self._status(f"Opened in viewer (install xclip for clipboard)", WARN)
+                except Exception:
+                    messagebox.showinfo("Save location", f"PNG saved to:\n{tmp.name}", parent=win)
+
+        for text, cmd, fg in [
+            ("🔍 Zoom In",  zoom_in,  GREEN),
+            ("🔎 Zoom Out", zoom_out, GREEN),
+            ("⊡ Fit",       zoom_fit, BLUE),
+            ("💾 Save PNG", save_png, BLUE),
+            ("📋 Copy",     copy_image, ORANGE),
+        ]:
+            tk.Button(toolbar, text=text, command=cmd, bg=CARD, fg=fg,
+                      font=SM, relief="flat", padx=10, pady=3,
+                      cursor="hand2").pack(side="left", padx=2)
+        zoom_lbl.pack(side="left", padx=12)
+
+        canvas.bind("<MouseWheel>", lambda e: zoom_in() if e.delta > 0 else zoom_out())
+        canvas.bind("<Button-4>", zoom_in)
+        canvas.bind("<Button-5>", zoom_out)
+
+        redraw()
+        win.after(150, zoom_fit)
+
+    def _toggle_custom_instructions(self):
+        if self._ci_frame.winfo_ismapped():
+            self._ci_frame.pack_forget()
+            self._ci_btn.config(text="📝 Custom instructions (off)", fg=MUTED)
+        else:
+            self._ci_frame.pack(fill="x", padx=0, pady=(0, 2))
+            self._ci_btn.config(text="📝 Custom instructions (on)", fg=ORANGE)
+
+    def _update_custom_instructions(self):
+        self._custom_instructions = self._ci_box.get("1.0", "end").strip()
 
     def _show_followups(self, followups):
         self._clear_followups()
