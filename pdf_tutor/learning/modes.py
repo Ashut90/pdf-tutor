@@ -6,21 +6,22 @@ VARK learning-style modes (Visual, Auditory, Read/Write, Kinesthetic, Omni).
 
 VISUAL_INSTRUCTIONS = """
 
-DIAGRAMS — include at least one per response:
-- ASCII diagrams always work and render reliably. Prefer them.
-- Mermaid as secondary (no style/classDef lines, no themeVariables).
+DIAGRAM — include exactly ONE Mermaid flowchart. Do NOT hand-draw ASCII boxes (they break).
+A renderer parses your Mermaid, so follow these rules EXACTLY:
+- First line: flowchart TD
+- Node: ID[Short Label]  — ID is one word, label is 1-3 plain words.
+- NO parentheses, colons, slashes, or quotes inside labels.
+- Edge: A --> B   or   A -->|verb| B
+- 5 to 9 nodes. No style lines, no classDef, no subgraph, no comments.
+- Put it in a ```mermaid fenced block.
 
-ASCII example:
-```ascii
-┌─────────────┐    fork()    ┌─────────────┐
-│   Parent    │─────────────▶│    Child    │
-└─────────────┘              └─────────────┘
-```
-
-Mermaid example:
+EXACT FORMAT TO COPY:
 ```mermaid
 flowchart TD
-    A[fork] --> B[do_fork] --> C[copy_process]
+    App[User Process] -->|syscall| Kernel[Kernel]
+    Kernel -->|schedules| CPU[CPU]
+    Kernel -->|manages| Mem[Memory]
+    Kernel -->|drives| Dev[Devices]
 ```
 """
 
@@ -30,7 +31,12 @@ MODES = {
         "sys": (
             "You are a senior Linux kernel engineer (15 years BSP/embedded experience) teaching someone moving from QA into firmware engineering.\n"
             "RESPOND IN ENGLISH ONLY.\n\n"
-            "For EVERY concept or section in the loaded pages, use this EXACT template:\n\n"
+            "YOUR RESPONSE MUST START WITH THIS SECTION (do not skip it):\n\n"
+            "## Big Picture\n"
+            "One Mermaid flowchart showing how the main concepts in these pages relate.\n"
+            "STRICT: first line 'flowchart TD'; nodes as ID[1-3 word label] with NO punctuation in labels; "
+            "edges as A --> B or A -->|verb| B; 5-9 nodes; no style/classDef/subgraph lines; in a ```mermaid fence.\n\n"
+            "THEN, for EVERY concept or section in the loaded pages, use this EXACT template:\n\n"
             "### [Concept Name]\n"
             "**What it is:** One precise sentence. No vague words.\n"
             "**Why it matters for embedded work:** One concrete reason — connect to a real driver, RTOS, or hardware scenario.\n"
@@ -45,7 +51,7 @@ MODES = {
             "- /proc paths: use real ones — /proc/meminfo, /proc/schedstat, /proc/sys/kernel/pid_max etc.\n"
             "- Do NOT pad code with obvious comments that repeat what the code already says.\n\n"
             "SCOPE: Cover ONLY what is in the loaded pages. Do not add extra chapters or topics not mentioned.\n"
-            "DEPTH: Every sentence must add a fact. If you have nothing more to add, stop — do not pad." + VISUAL_INSTRUCTIONS
+            "DEPTH: Every sentence must add a fact. If you have nothing more to add, stop — do not pad."
         ),
         "user": "Explain this chapter in full depth. Cover every section with internal mechanisms, real examples, and diagrams.",
         "followups": [
@@ -173,11 +179,13 @@ MODES = {
             "RULES: 2-4 words per label. No punctuation, no colons, no quotes inside labels. Max 5 branches. Max 3 sub-topics each. Do NOT use flowchart syntax here.\n\n"
 
             "## How It Connects\n"
-            "One Mermaid flowchart TD showing how the main components/steps relate. Keep node labels short.\n"
+            "One Mermaid flowchart TD. STRICT: ID[1-3 word label], no punctuation in labels, "
+            "edges as A --> B or A -->|verb| B, 5-9 nodes, no style/classDef/subgraph lines.\n"
             "```mermaid\n"
             "flowchart TD\n"
-            "    A[Concept A] --> B[Concept B]\n"
-            "    B --> C[Result]\n"
+            "    App[User Process] -->|syscall| Kernel[Kernel]\n"
+            "    Kernel -->|schedules| CPU[CPU]\n"
+            "    Kernel -->|manages| Mem[Memory]\n"
             "```\n\n"
 
             "## Visual Comparison\n"

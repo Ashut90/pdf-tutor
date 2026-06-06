@@ -40,11 +40,13 @@ class AIClient:
             return self._stream("http://localhost:11434/api/chat",
                 {"model": model, "messages": messages, "stream": True,
                  "options": {
-                     "num_predict": 4000,
-                     "num_ctx": 8192,
-                     "temperature": 0.7,           # variety, less repetition
-                     "repeat_penalty": 1.3,        # punish repeating tokens
-                     "repeat_last_n": 256,         # look back 256 tokens
+                     # Tuned via _promptlab.py against TLPI on qwen2.5-coder:7b.
+                     # repeat_penalty 1.3 was choking generation (halved output);
+                     # temp 0.7 caused drift/made-up content on factual teaching.
+                     "num_predict": 6000,          # allow long, detailed answers
+                     "num_ctx": 16384,             # fit whole chapters w/o silent truncation
+                     "temperature": 0.35,          # factual, low drift for teaching
+                     "repeat_penalty": 1.1,        # standard — higher chokes technical terms
                      "top_p": 0.9,
                      "top_k": 40,
                  }},
