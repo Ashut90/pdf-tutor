@@ -1358,7 +1358,9 @@ document.getElementById('btnPng').onclick = () => {{
 
     def _render_mermaid_block(self, code):
         """Render mermaid block. Always show code as fallback on failure."""
-        self.chat_view.insert("end", "\n🔗 Mermaid Diagram:\n", "viz_lbl")
+        is_mm = code.strip().lower().startswith("mindmap")
+        label = "\n🧠 Mind Map:\n" if is_mm else "\n🔗 Mermaid Diagram:\n"
+        self.chat_view.insert("end", label, "viz_lbl")
         if not PIL_OK:
             self.chat_view.insert("end",
                 "(Pillow not installed — paste at mermaid.live)\n\n", "hint")
@@ -1368,12 +1370,17 @@ document.getElementById('btnPng').onclick = () => {{
         self.chat_view.insert("end", "  ⏳ rendering...\n", "hint")
 
         def do_render():
-            img, err = render_mermaid_to_image(code)
+            # Bulletproof: any failure must still clear the placeholder,
+            # otherwise the UI hangs forever on "⏳ rendering...".
+            try:
+                img, err = render_mermaid_to_image(code)
+            except Exception as e:
+                img, err = None, str(e)
             if img:
                 self.after(0, lambda: self._insert_image_at(placeholder_idx, img))
             else:
-                msg = (f"  (Renderers unavailable — copy to mermaid.live to view)\n\n"
-                       f"{code}\n\n")
+                msg = (f"  (Diagram couldn't render — showing source. "
+                       f"Install graphviz for offline rendering.)\n\n{code}\n\n")
                 self.after(0, lambda: self._insert_text_at(placeholder_idx, msg, "code"))
         threading.Thread(target=do_render, daemon=True).start()
 

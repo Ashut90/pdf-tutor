@@ -119,6 +119,72 @@ def mermaid_to_graphviz(mmd_code):
         return None, f"graphviz: {e}"
 
 
+def is_mindmap(mmd_code):
+    """True if the block uses Mermaid mindmap syntax (indentation-based)."""
+    return mmd_code.strip().lower().startswith("mindmap")
+
+
+def mindmap_to_graphviz(mmd_code):
+    """
+    Convert Mermaid `mindmap` (indentation-based hierarchy) into a clean
+    left-to-right graphviz tree. Works fully offline. Returns (PIL.Image|None, err).
+    """
+    if not GRAPHVIZ_OK or not PIL_OK:
+        return None, "graphviz/Pillow not installed"
+    try:
+        lines = [l for l in mmd_code.split("\n") if l.strip()]
+        # Drop the leading "mindmap" keyword line
+        if lines and lines[0].strip().lower().startswith("mindmap"):
+            lines = lines[1:]
+        if not lines:
+            return None, "empty mindmap"
+
+        def clean_label(s):
+            s = s.strip()
+            # Mermaid node shapes: id((circle)), id(round), id[box], id{hex}, ((bang)).
+            # Extract the text inside the outermost brackets, dropping any leading id.
+            m = re.search(r'[\(\[\{]+(.+?)[\)\]\}]+\s*$', s)
+            if m:
+                s = m.group(1)
+            return s.strip().replace('"', "'") or "•"
+
+        # depth palette (root -> leaves)
+        palette = ["#1f6feb", "#1a7f37", "#6e40c9", "#b45309", "#0e7490", "#be185d"]
+
+        g = graphviz.Digraph(format="png")
+        g.attr(bgcolor="white", rankdir="LR", pad="0.3", nodesep="0.25", ranksep="0.6")
+        g.attr("node", shape="box", style="filled,rounded",
+               fontcolor="white", color="#ffffff", fontname="Helvetica", fontsize="12")
+        g.attr("edge", color="#9aa4b2", arrowsize="0.6")
+
+        stack = []   # list of (indent, node_id)
+        counter = [0]
+
+        def new_id():
+            counter[0] += 1
+            return f"n{counter[0]}"
+
+        for line in lines:
+            indent = len(line) - len(line.lstrip(" "))
+            label = clean_label(line)
+            nid = new_id()
+            # pop stack to find parent (strictly smaller indent)
+            while stack and stack[-1][0] >= indent:
+                stack.pop()
+            depth = len(stack)
+            g.node(nid, label, fillcolor=palette[depth % len(palette)])
+            if stack:
+                g.edge(stack[-1][1], nid)
+            stack.append((indent, nid))
+
+        if counter[0] == 0:
+            return None, "no nodes parsed"
+        data = g.pipe(format="png")
+        return Image.open(io.BytesIO(data)), None
+    except Exception as e:
+        return None, f"mindmap graphviz: {e}"
+
+
 def render_mermaid_to_image(mmd_code):
     """
     Render Mermaid to PIL Image. Tries in order:
@@ -150,7 +216,7 @@ def render_mermaid_to_image(mmd_code):
         encoded = base64.urlsafe_b64encode(compressed).decode().rstrip("=")
         url = f"https://mermaid.ink/img/pako:{encoded}?type=png&bgColor=!white"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 AI-Teacher"})
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=12) as r:
             data = r.read()
         img = Image.open(io.BytesIO(data))
         img.load()
@@ -163,7 +229,7 @@ def render_mermaid_to_image(mmd_code):
         encoded = base64.urlsafe_b64encode(clean_mmd.encode("utf-8")).decode().rstrip("=")
         url = f"https://mermaid.ink/img/{encoded}?type=png"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 AI-Teacher"})
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=12) as r:
             data = r.read()
         img = Image.open(io.BytesIO(data))
         img.load()
@@ -177,7 +243,7 @@ def render_mermaid_to_image(mmd_code):
         encoded = base64.urlsafe_b64encode(compressed).decode().rstrip("=")
         url = f"https://kroki.io/mermaid/png/{encoded}"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 AI-Teacher"})
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=12) as r:
             data = r.read()
         img = Image.open(io.BytesIO(data))
         img.load()
@@ -185,8 +251,13 @@ def render_mermaid_to_image(mmd_code):
     except Exception as e3:
         err3 = f"kroki.io: {e3}"
 
-    # Try 4: LOCAL graphviz — works offline, no Chrome, no online services needed
-    img, gv_err = mermaid_to_graphviz(clean_mmd)
+    # Try 4: LOCAL graphviz — works offline, no Chrome, no online services needed.
+    # Mindmaps use indentation syntax which the flowchart parser can't read,
+    # so route them to the dedicated mindmap tree builder.
+    if is_mindmap(clean_mmd):
+        img, gv_err = mindmap_to_graphviz(clean_mmd)
+    else:
+        img, gv_err = mermaid_to_graphviz(clean_mmd)
     if img is not None:
         return img, None
     err4 = gv_err or "graphviz failed"
