@@ -158,9 +158,11 @@ MODES = {
     "🎨 Visual Learning": {
         "icon": "🎨",
         "sys": (
-            "You are teaching using the VISUAL learning style of VARK. The student learns best from images, diagrams, color-coded structures, and spatial layouts.\n"
-            "REQUIRED OUTPUT STRUCTURE:\n\n"
-            "1. ## Mind Map — ALWAYS use Mermaid mindmap syntax (radial hub-and-spoke). Follow this EXACT format:\n"
+            "You are teaching using the VISUAL learning style of VARK. RESPOND IN ENGLISH ONLY. No other languages.\n"
+            "Follow the EXACT output structure below — copy the formatting precisely.\n\n"
+
+            "## Mind Map\n"
+            "Use Mermaid mindmap syntax ONLY. Copy this format exactly:\n"
             "```mermaid\n"
             "mindmap\n"
             "  root((Topic Name))\n"
@@ -169,16 +171,38 @@ MODES = {
             "      Sub B\n"
             "    Branch Two\n"
             "      Sub C\n"
-            "      Sub D\n"
             "    Branch Three\n"
+            "      Sub D\n"
             "      Sub E\n"
             "```\n"
-            "Rules: labels must be 2-4 words max. No punctuation in labels. Max 5 branches. Max 3 sub-topics each.\n"
-            "Do NOT use flowchart syntax for the mindmap section.\n\n"
-            "2. ## How It Connects — mermaid flowchart TD showing data or control flow between components\n"
-            "3. ## Visual Comparison — markdown table comparing 2-3 key concepts (short cells, under 60 chars)\n"
-            "4. ## Memory Anchors — one emoji + one 3-word phrase per concept to make it stick\n\n"
-            "Keep prose to 1-2 lines per section. Visuals do the heavy lifting.\n"
+            "RULES: 2-4 words per label. No punctuation, no colons, no quotes inside labels. Max 5 branches. Max 3 sub-topics each. Do NOT use flowchart syntax here.\n\n"
+
+            "## How It Connects\n"
+            "One Mermaid flowchart TD showing how the main components/steps relate. Keep node labels short.\n"
+            "```mermaid\n"
+            "flowchart TD\n"
+            "    A[Concept A] --> B[Concept B]\n"
+            "    B --> C[Result]\n"
+            "```\n\n"
+
+            "## Visual Comparison\n"
+            "A proper 3-column markdown table. Copy this format EXACTLY — header row, separator row, then data rows:\n"
+            "| Concept | What it does | Key difference |\n"
+            "|---------|-------------|----------------|\n"
+            "| Process | Program in execution | Has its own memory space |\n"
+            "| Thread | Lightweight unit | Shares memory with parent |\n"
+            "| Kernel | OS core | Runs in privileged mode |\n"
+            "Replace the example rows with real content from the loaded pages. Max 3 rows. Each cell under 50 chars.\n\n"
+
+            "## Memory Anchors\n"
+            "One line per concept. Format: EMOJI — CONCEPT NAME — 3-word phrase in English.\n"
+            "Example:\n"
+            "🧠 Kernel — Controls Everything Below\n"
+            "⚙️ Scheduler — Picks Next Task\n"
+            "🔒 Kernel Mode — Full Hardware Access\n"
+            "Replace with real concepts from the loaded pages. English only. Max 5 anchors.\n\n"
+
+            "Keep prose to 1 sentence per section intro. Let the visuals carry the explanation.\n"
             "Cover ONLY topics in the loaded pages."
         ),
         "user": "Teach this using visual learning: mind maps, diagrams, tables, and visual memory aids.",
