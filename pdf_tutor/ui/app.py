@@ -19,7 +19,7 @@ from pdf_tutor.config import (
     INPUT, ACCENT, CODE_BLUE, FN, FM, H1, H2, H3, BODY, SM, MONO,
     MAX_CTX, PROVIDERS,
 )
-from pdf_tutor.learning.modes import MODES, VISUAL_INSTRUCTIONS
+from pdf_tutor.learning.modes import MODES, VISUAL_INSTRUCTIONS, LOCAL_GUIDANCE
 from pdf_tutor.core.pdf import (
     PDF_OK, PIL_OK, get_toc_and_total, extract_text,
     render_page_image, build_chapter_list,
@@ -1109,6 +1109,10 @@ document.getElementById('btnPng').onclick = () => {{
         def run():
             try:
                 effective_sys = sys_prompt
+                # Local 7-8B models need strict structure; cloud models do better
+                # with the open-ended prompts, so only Ollama gets the extra rules.
+                if prov["id"] == "ollama":
+                    effective_sys += LOCAL_GUIDANCE
                 if self._custom_instructions:
                     effective_sys += f"\n\nADDITIONAL USER INSTRUCTIONS:\n{self._custom_instructions}"
                 history_size = 2 if prov["id"] in ("groq", "openrouter") else 6
