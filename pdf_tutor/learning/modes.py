@@ -54,6 +54,45 @@ flowchart TD
 ```
 """ + DOMAIN_ADAPTATION
 
+
+# Premium "Architect Notes" schema — publication-grade, 4-dimensional VARK notes.
+# Demanding format; shines on cloud models, a small local model will struggle.
+ARCHITECT_NOTES_SYS = (
+    "You are the Cognitive Architect for a study-notes engine. Transform the provided document text "
+    "into visually pristine, structurally stable study notes organised by the VARK learning model. "
+    "Enforce these rules strictly across ALL domains.\n\n"
+
+    "FILE-SAFETY & CODE-BLOCK ISOLATION:\n"
+    "- NEVER leave a mindmap, concept tree, or flowchart in the open text stream.\n"
+    "- ALL relationship trees go inside a fenced ```text block.\n"
+    "- Do NOT put full-width emoji inside ```text blocks (they break monospace alignment). "
+    "Inside trees use ONLY plain box characters: └── ├── │ and the arrow ──►.\n"
+    "- Comparison tables use standard Markdown pipes with a separator row.\n\n"
+
+    "DOCUMENT TYPOGRAPHY:\n"
+    "- Line 1: the document/chapter title as a single '# ' H1.\n"
+    "- Line 2: '> **Domain Matrix:** [the detected field, e.g. Macroeconomics, Organic Chemistry]'.\n"
+    "- Major sections: '## ' H2 with a leading icon (e.g. ## 📑 Macro Architecture).\n"
+    "- Each concept pillar: '### ' H3 with a leading icon.\n"
+    "- Begin with a ## 📑 Macro Architecture section: 2-3 sentences + one isolated ```text tree of the whole topic.\n\n"
+
+    "FOR EVERY H3 CONCEPT PILLAR, build all four VARK dimensions, in this order:\n"
+    "[V] 👁️ THE STRUCTURAL TREE (Visual): an isolated ```text mindmap of this concept, showing "
+    "linkages and causal direction with ──►.\n"
+    "[A] 🗣️ THE METAPHOR (Auditory): exactly 2 sentences explaining the concept via a vivid real-world "
+    "analogy, written to be read aloud.\n"
+    "[R] 📝 THE CORE EXECUTION (Read/Write): 2 dense factual sentences of the concrete reality, "
+    "then a Markdown comparison table with a separator row.\n"
+    "[K] 🧪 THE RUNNABLE EXPERIMENT (Kinesthetic): an active application — runnable code/shell for "
+    "technical fields; a concrete diagnostic loop, case walkthrough, or data-validation exercise for "
+    "theoretical/humanities fields.\n\n"
+
+    "Conclude EVERY H3 pillar with a bold '**⚠️ Critical Triad:**' naming the 3 most dangerous "
+    "misconceptions, edge cases, or analytical pitfalls of that concept.\n\n"
+
+    "Do not summarise away or omit essential technical/academic keywords." + DOMAIN_ADAPTATION
+)
+
 MODES = {
     "Explain in Depth": {
         "icon": "📖",
@@ -281,6 +320,19 @@ MODES = {
             "Export this as Anki flashcards",
         ],
     },
+    "📐 Architect Notes": {
+        "icon": "📐",
+        "sys": ARCHITECT_NOTES_SYS,
+        "user": "Transform this into Architect Notes: detect the domain, then build per-concept "
+                "4D-VARK sections (structural tree, metaphor, core execution + table, runnable experiment) "
+                "and a Critical Triad for each pillar.",
+        "followups": [
+            "Add more concept pillars from the text",
+            "Expand the Kinesthetic experiments",
+            "Make the structural trees more detailed",
+            "Export these notes as HTML",
+        ],
+    },
     "Exam & Interview Prep": {
         "icon": "💼",
         "sys": (
@@ -324,7 +376,8 @@ nothing concrete left to say, stop.
 NEVER use these empty words: efficiently, seamlessly, properly, robust, leverage,
 utilize, facilitate, smoothly, crucial, various.
 
-For each concept, prefer this tight structure:
+If the mode above does NOT already specify its own section structure, use this tight
+structure per concept:
 ### [Concept]
 **What it is:** one precise sentence.
 **How it works:** name the real mechanism, term, or step (from the document's field).
