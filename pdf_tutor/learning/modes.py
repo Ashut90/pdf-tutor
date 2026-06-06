@@ -30,21 +30,32 @@ flowchart TD
 CONCEPT_CHAIN = """
 
 ## Reasoning Chain
-Pick the SINGLE most important concept in these pages and show it as a left-to-right
-cause-and-effect chain: WHAT -> WHEN -> HOW -> WHY -> RESULT.
+Pick the SINGLE most important concept and show its cause-and-effect chain:
+WHAT -> WHEN -> HOW -> WHY -> RESULT.
+
+EACH box MUST contain a CONCRETE specific from the pages — a real function name,
+data structure, syscall, register, /proc path, or a number. Vague boxes are FORBIDDEN.
+If you cannot fill all 5 boxes with something concrete, SKIP this whole section.
+
+REJECTED (too vague — never write boxes like these):
+  WHY[Efficient use of memory]   RESULT[Improved performance]   HOW[Pages loaded into RAM]
+GOOD (specific, teaches something):
+  WHY[Avoids copying full address space]   RESULT[fork returns in microseconds]
+  HOW[MMU translates via page tables]
+
 STRICT Mermaid (a renderer parses this):
 - First line: flowchart LR
-- Exactly 5 nodes, labels under 6 words, no parentheses/quotes inside labels.
+- Exactly 5 nodes, no parentheses/quotes inside labels.
 - Edges in order: W --> N --> H --> Y --> R
 - No style/classDef/subgraph lines. Put it in a ```mermaid fence.
 
-EXACT FORMAT TO COPY:
+EXACT FORMAT TO COPY (notice every box names a real mechanism):
 ```mermaid
 flowchart LR
-    W[WHAT: Context switch] --> N[WHEN: Timer interrupt fires]
-    N --> H[HOW: Scheduler saves state]
-    H --> Y[WHY: Share one CPU fairly]
-    Y --> R[RESULT: Tasks feel concurrent]
+    W[WHAT: Copy-on-write fork] --> N[WHEN: Process calls fork]
+    N --> H[HOW: Pages marked read-only in PTE]
+    H --> Y[WHY: Avoids copying whole address space]
+    Y --> R[RESULT: fork completes in microseconds]
 ```
 """
 

@@ -34,17 +34,40 @@ def ensure_ollama():
 
 
 class AIClient:
+    @staticmethod
+    def _fit_num_ctx(messages, num_predict):
+        """Size the context window to the actual content, not a fixed max.
+
+        Ollama reserves KV-cache memory for the FULL num_ctx regardless of how
+        much input there is. On a small GPU (e.g. 6GB), a fixed 16K ctx forces
+        the model to spill out of VRAM even for a 3-page topic — slow. Sizing
+        ctx to (input + output) keeps small topics in VRAM (fast) while big
+        chapters still get the room they need.
+        """
+        chars = sum(len(m.get("content", "")) for m in messages)
+        # Reserve a realistic output budget (~3500 tok), not the full num_predict
+        # cap — most teaching answers are 1-3k tokens. A 3-page topic then lands
+        # in the fast 8192 bucket (benchmarked at 44s, fully in 6GB VRAM).
+        out_reserve = min(num_predict, 3500)
+        needed = chars // 4 + out_reserve + 512   # ~4 chars/token + headroom
+        for bucket in (4096, 8192, 12288, 16384):
+            if needed <= bucket:
+                return bucket
+        return 16384  # cap — beyond this, cloud providers are the better path
+
     def chat(self, pid, model, key, messages, on_chunk=None):
         if pid == "ollama":
             ensure_ollama()
+            num_predict = 6000
             return self._stream("http://localhost:11434/api/chat",
                 {"model": model, "messages": messages, "stream": True,
                  "options": {
-                     # Tuned via _promptlab.py against TLPI on qwen2.5-coder:7b.
+                     # Tuned via benchmark against TLPI on qwen2.5-coder:7b (RTX 2060 6GB).
                      # repeat_penalty 1.3 was choking generation (halved output);
                      # temp 0.7 caused drift/made-up content on factual teaching.
-                     "num_predict": 6000,          # allow long, detailed answers
-                     "num_ctx": 16384,             # fit whole chapters w/o silent truncation
+                     "num_predict": num_predict,   # allow long, detailed answers
+                     # Adaptive: small topics stay in VRAM (fast); big chapters grow.
+                     "num_ctx": self._fit_num_ctx(messages, num_predict),
                      "temperature": 0.35,          # factual, low drift for teaching
                      "repeat_penalty": 1.1,        # standard — higher chokes technical terms
                      "top_p": 0.9,
