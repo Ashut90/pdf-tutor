@@ -1541,14 +1541,25 @@ document.getElementById('btnPng').onclick = () => {{
             tmp.close()
             pil_img.save(tmp.name)
             try:
+                # xclip forks a background daemon to serve the clipboard. With
+                # capture_output it inherits our pipes and never closes them, so
+                # subprocess.run blocks FOREVER on the UI thread and the window
+                # won't close. Redirect all std streams to DEVNULL so the daemon
+                # detaches cleanly; add a timeout as a safety net.
                 subprocess.run(["xclip", "-selection", "clipboard",
                                 "-t", "image/png", "-i", tmp.name],
-                               check=True, capture_output=True)
+                               check=True, timeout=5,
+                               stdin=subprocess.DEVNULL,
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
                 self._status("Diagram copied to clipboard", GREEN)
-            except (FileNotFoundError, subprocess.CalledProcessError):
+            except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 try:
-                    subprocess.run(["xdg-open", tmp.name], capture_output=True)
-                    self._status(f"Opened in viewer (install xclip for clipboard)", WARN)
+                    subprocess.run(["xdg-open", tmp.name], timeout=5,
+                                   stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
+                    self._status("Opened in viewer (install xclip for clipboard)", WARN)
                 except Exception:
                     messagebox.showinfo("Save location", f"PNG saved to:\n{tmp.name}", parent=win)
 
@@ -1696,10 +1707,16 @@ document.getElementById('btnPng').onclick = () => {{
                 with urllib.request.urlopen(req, timeout=15) as r:
                     data = json.loads(r.read().decode())
                 if prov["id"] == "gemini":
-                    # Gemini returns different shape: {"models": [{"name": "models/gemini-..."}, ...]}
-                    models = sorted([m["name"].replace("models/", "")
-                                      for m in data.get("models", [])
-                                      if "generateContent" in m.get("supportedGenerationMethods", [])])
+                    # Gemini returns: {"models": [{"name": "models/gemini-..."}, ...]}
+                    # Exclude image-gen / embedding / tts / vision / aqa models —
+                    # they support generateContent but are NOT free-tier text models
+                    # (e.g. gemini-2.5-flash-image has free-tier quota 0 and errors).
+                    _exclude = ("image", "embedding", "tts", "vision", "aqa")
+                    models = sorted([
+                        m["name"].replace("models/", "")
+                        for m in data.get("models", [])
+                        if "generateContent" in m.get("supportedGenerationMethods", [])
+                        and not any(x in m["name"].lower() for x in _exclude)])
                 else:
                     models = sorted([m["id"] for m in data.get("data", [])])
                 if not models:

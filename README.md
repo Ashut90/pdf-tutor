@@ -20,9 +20,11 @@ So I built this. You drop a PDF in, pick a chapter, and it explains it to you �
 
 ## Screenshots
 
-| Main window | Exported mind map |
+| Main window | Mind map in the diagram viewer (zoom · copy · save) |
 |:-----------:|:-----------------:|
 | ![Main window](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/screenshot-main.png) | ![Mind map](https://raw.githubusercontent.com/Ashut90/pdf-tutor/main/assets/screenshot-mindmap.png) |
+
+Any AI-generated diagram opens in a built-in viewer where you can zoom, fit, save as PNG, or copy to the clipboard — and mind maps render **offline** via a local graphviz fallback when there's no internet.
 
 ---
 
