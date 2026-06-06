@@ -25,6 +25,29 @@ flowchart TD
 ```
 """
 
+# Reasoning-chain diagram: shows cause-and-effect for ONE key concept so a
+# learner sees not just WHAT something is but when/how/why it happens.
+CONCEPT_CHAIN = """
+
+## Reasoning Chain
+Pick the SINGLE most important concept in these pages and show it as a left-to-right
+cause-and-effect chain: WHAT -> WHEN -> HOW -> WHY -> RESULT.
+STRICT Mermaid (a renderer parses this):
+- First line: flowchart LR
+- Exactly 5 nodes, labels under 6 words, no parentheses/quotes inside labels.
+- Edges in order: W --> N --> H --> Y --> R
+- No style/classDef/subgraph lines. Put it in a ```mermaid fence.
+
+EXACT FORMAT TO COPY:
+```mermaid
+flowchart LR
+    W[WHAT: Context switch] --> N[WHEN: Timer interrupt fires]
+    N --> H[HOW: Scheduler saves state]
+    H --> Y[WHY: Share one CPU fairly]
+    Y --> R[RESULT: Tasks feel concurrent]
+```
+"""
+
 MODES = {
     "Explain in Depth": {
         "icon": "📖",
@@ -35,8 +58,9 @@ MODES = {
             "## Big Picture\n"
             "One Mermaid flowchart showing how the main concepts in these pages relate.\n"
             "STRICT: first line 'flowchart TD'; nodes as ID[1-3 word label] with NO punctuation in labels; "
-            "edges as A --> B or A -->|verb| B; 5-9 nodes; no style/classDef/subgraph lines; in a ```mermaid fence.\n\n"
-            "THEN, for EVERY concept or section in the loaded pages, use this EXACT template:\n\n"
+            "edges as A --> B or A -->|verb| B; 5-9 nodes; no style/classDef/subgraph lines; in a ```mermaid fence.\n"
+            + CONCEPT_CHAIN +
+            "\nTHEN, for EVERY concept or section in the loaded pages, use this EXACT template:\n\n"
             "### [Concept Name]\n"
             "**What it is:** One precise sentence. No vague words.\n"
             "**Why it matters for embedded work:** One concrete reason — connect to a real driver, RTOS, or hardware scenario.\n"
@@ -186,7 +210,8 @@ MODES = {
             "    App[User Process] -->|syscall| Kernel[Kernel]\n"
             "    Kernel -->|schedules| CPU[CPU]\n"
             "    Kernel -->|manages| Mem[Memory]\n"
-            "```\n\n"
+            "```\n"
+            + CONCEPT_CHAIN + "\n"
 
             "## Visual Comparison\n"
             "A proper 3-column markdown table. Copy this format EXACTLY — header row, separator row, then data rows:\n"
