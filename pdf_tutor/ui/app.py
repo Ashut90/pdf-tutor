@@ -207,6 +207,10 @@ class App(tk.Tk):
         ts = datetime.now().strftime("%Y-%m-%d_%H%M")
         safe = re.sub(r'[^\w\s-]', '', title).strip()[:40]
         safe = re.sub(r'[\s]+', '_', safe)
+        # Deck name from the loaded book's filename, not a hardcoded subject.
+        deck = "Study Notes"
+        if self.active_pdf:
+            deck = os.path.splitext(os.path.basename(self.active_pdf))[0][:50]
         default = f"anki_{safe}_{ts}.txt"
         path = filedialog.asksaveasfilename(
             title="Save Anki Flashcards",
@@ -221,7 +225,7 @@ class App(tk.Tk):
                 # Anki import header (optional, helps Anki recognize fields)
                 f.write("#separator:tab\n")
                 f.write("#html:false\n")
-                f.write("#deck:TLPI Study\n")
+                f.write(f"#deck:{deck}\n")
                 f.write(f"#tags:{safe}\n")
                 for front, back in cards:
                     f.write(f"{front}\t{back}\n")
@@ -233,7 +237,7 @@ class App(tk.Tk):
                 f"1. Open Anki\n"
                 f"2. File > Import > select this file\n"
                 f"3. Choose 'Tab' as separator\n"
-                f"4. Deck: TLPI Study (auto-created)")
+                f"4. Deck: {deck} (auto-created)")
         except Exception as e:
             messagebox.showerror("Save Failed", str(e))
 
@@ -258,14 +262,14 @@ class App(tk.Tk):
                   f"- Use ### for sub-topics (max 4 per branch).\n"
                   f"- Use #### for details (optional, max 2 per sub-topic).\n"
                   f"- Each line must be SHORT: 2-5 words maximum. No sentences.\n\n"
-                  f"EXAMPLE:\n"
-                  f"# The Kernel\n"
-                  f"## Core Functions\n"
-                  f"### Process Scheduling\n"
-                  f"### Memory Management\n"
-                  f"## System Calls\n"
-                  f"### API Interface\n"
-                  f"### User Space Bridge\n\n"
+                  f"EXAMPLE (structure only — use the ACTUAL topics from the content below):\n"
+                  f"# Main Topic\n"
+                  f"## First Major Branch\n"
+                  f"### Sub-topic\n"
+                  f"### Sub-topic\n"
+                  f"## Second Major Branch\n"
+                  f"### Sub-topic\n"
+                  f"### Sub-topic\n\n"
                   f"Content:\n{text[:4000]}")
 
         pname = self.pv.get()
@@ -1060,7 +1064,8 @@ document.getElementById('btnPng').onclick = () => {{
             return
         self.input_box.delete("1.0", "end")
         sys_p = (MODES["Explain in Depth"]["sys"] if self.pdf_text else
-                 "You are a helpful expert in Linux, embedded systems, and firmware. Give detailed answers with diagrams where helpful." + VISUAL_INSTRUCTIONS)
+                 "You are a knowledgeable tutor. Answer the user's question clearly and accurately in whatever "
+                 "field it concerns, with concrete examples and a diagram where it helps." + VISUAL_INSTRUCTIONS)
         self._do_chat(txt, sys_p, [])
 
     def _on_enter(self, event):
